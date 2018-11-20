@@ -1,7 +1,22 @@
+require "erb"
+require "yaml"
 require "socket"
 require "xmlrpc/server"
 require "webrick" # preload here so it isn't slow in spec
 require "active_support/core_ext/array/extract_options"
+
+class FakeBugzillaDataStore
+  attr_reader :data_dir, :actions
+
+  def initialize(data_dir)
+    @data_dir = data_dir
+
+    @actions = Dir["#{data_dir}/*"].each_with_object({}) do |file, action_map|
+                 key             = File.basename(file, ".*")
+                 action_map[key] = YAML.load_file(file)
+               end
+  end
+end
 
 # A singleton server to be used in testing.  Provides a DSL for defining stub
 # actions/responses, along with param validation.
@@ -9,6 +24,13 @@ require "active_support/core_ext/array/extract_options"
 # See FakeBugzillaServer::start_with for more info on defining a server.
 class FakeBugzillaServer
   DEFAULT_HOST = "127.0.0.1".freeze
+
+  def self.start(data_dir, host = nil, port = nil)
+    setup_server(host, port)
+    @data_store = FakeBugzillaDataStore.new(data_dir)
+    add_handlers
+    @bugzilla.serve
+  end
 
   # Start a server, and define proper actions via a block.
   #
@@ -51,6 +73,20 @@ class FakeBugzillaServer
     @bugzilla.add_handler(action_key, &responder)
   end
 
+  def self.add_handlers
+    @data_store.actions.each_key do |action|
+      @bugzilla.add_handler(action) do |params|
+        if (action_data = @data_store.actions[action])
+          matched_action = action_data["valid_requests"].detect do |req|
+                             req["request_params"] == params
+                           end || {}
+
+          matched_action["response"] || not_found(action, action_data, params)
+        end
+      end
+    end
+  end
+
   # Defines the server (@bugzilla) instance variable.
   #
   # See XMLRPC::ThreadServer below for more info on the specific server class
@@ -68,6 +104,18 @@ class FakeBugzillaServer
 
   def self.server_host
     @server_host ||= DEFAULT_HOST
+  end
+
+  def self.not_found(action, action_data = nil, params = nil)
+    error_message = action_data["error_message"] if action_data
+    if error_message
+      error_binding = binding.dup
+      error_binding.local_variable_set(:params, params)
+      error_message = ERB.new(error_message, nil, "-").result(error_binding)
+    else
+      error_message = "Method #{action.inspect} missing or invalid params!"
+    end
+    raise XMLRPC::FaultException.new(1, error_message)
   end
 end
 

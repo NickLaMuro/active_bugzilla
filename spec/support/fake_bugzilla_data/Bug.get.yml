@@ -1,0 +1,53 @@
+error_message: "Bug #<%= Array(params['ids']).first || 0 %> does not exist."
+valid_requests:
+  - request_params:
+      ids: "948972"
+      Bugzilla_login: "calvin"
+      Bugzilla_password: "hobbes"
+      include_fields:
+        - assigned_to
+        - cc
+        - cf_devel_whiteboard
+        - cf_internal_whiteboard
+        - comments
+        - component
+        - description
+        - groups
+        - keywords
+        - op_sys
+        - platform
+        - priority
+        - product
+        - qa_contact
+        - severity
+        - summary
+        - target_release
+        - url
+        - version
+        - whiteboard
+    response:
+      description:    "Description of problem:\n\nIt's Broken"
+      priority:       "unspecified"
+      assigned_to:    "calvin@redhat.com"
+      target_release: ["---"]
+      keywords:       ["ZStream"]
+      cc:             ["calvin@redhat.com", "hobbes@RedHat.com"]
+      comments:
+        - is_private:    false
+          count:         0
+          time:          1969-7-20T16:18:30
+          bug_id:        948970
+          author:        "Calvin@redhat.com"
+          text:          "It's Broken and impossible to reproduce"
+          creation_time: 1969-7-20T16:18:30
+          id:            5777871
+          creator_id:    349490
+        - is_private:    false
+          count:         1
+          time:          1970-11-10T16:18:30
+          bug_id:        948970
+          author:        "Hobbes@redhat.com"
+          text:          "Fix Me Now!"
+          creation_time: 1972-2-14T0:0:0
+          id:            5782170
+          creator_id:    349490
