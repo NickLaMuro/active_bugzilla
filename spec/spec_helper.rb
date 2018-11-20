@@ -4,6 +4,11 @@
 # loaded once.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+
+# Requires supporting files with custom matchers and macros, etc,
+# in ./support/ and its subdirectories.
+Dir[File.expand_path(File.join(__FILE__, '../support/**/*.rb'))].each { |f| require f }
+
 RSpec.configure do |config|
   config.run_all_when_everything_filtered = true
 
