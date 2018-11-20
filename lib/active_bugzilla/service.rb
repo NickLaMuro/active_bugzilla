@@ -226,7 +226,7 @@ module ActiveBugzilla
     end
 
     def assemble_clone_description(existing_bz)
-      clone_description = " +++ This bug was initially created as a clone of Bug ##{existing_bz[:id]} +++ \n"
+      clone_description = " +++ This bug was initially created as a clone of Bug ##{existing_bz[:id.to_s]} +++ \n"
       clone_description << existing_bz[:description.to_s]
 
       clone_comment_is_private = false
