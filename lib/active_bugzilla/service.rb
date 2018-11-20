@@ -160,7 +160,9 @@ module ActiveBugzilla
       params = {}
       CLONE_FIELDS.each do |field|
         next if field == :comments
-        params[field] = existing_bz[field.to_s]
+        existing_val = existing_bz[field.to_s]
+        next if existing_val.nil?
+        params[field] = existing_val
       end
 
       # Apply overrides
